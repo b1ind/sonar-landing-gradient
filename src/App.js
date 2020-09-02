@@ -113,8 +113,9 @@ class Page extends Component {
     music: true,
     submitted: false,
     username: "",
-    error: "This is an error. You should check this out",
+    error: "",
     numError: false,
+    invalid: false,
   };
 
   componentDidMount = async () => {
@@ -125,18 +126,15 @@ class Page extends Component {
           method: "get",
           url: "/v1/invites/verify?code=" + this.props.code,
         });
-        console.log(response);
-        if (response.error) {
-          this.setState({ error: response.error.reason });
-        } else {
-          this.setState({
-            username: response.data.username,
-            error: null,
-            numError: false,
-          });
-        }
+        this.setState({
+          username: response.data.data.username,
+        });
       } catch (error) {
-        this.setState({ error: "We're having issues connecting right now." });
+        console.log(error.response.data);
+        this.setState({
+          error: error.response.data.error.reason,
+          invalid: true,
+        });
       }
     }
   };
@@ -169,7 +167,7 @@ class Page extends Component {
       url = "/v1/invites/consume";
       data = {
         phone_number: this.state.countryCode + this.state.phoneNumber,
-        code: this.props.code
+        code: this.props.code,
       };
     } else {
       url = "/v1/users/waitlist";
@@ -183,22 +181,14 @@ class Page extends Component {
         url: url,
         data: data,
       });
-      console.log(response.headers)
-      console.log(response.error)
-      console.log(response);
-      if (response.error) {
-        if (response.error.code === 6002) {
-          this.setState({ numError: true });
-        } else if (this.props.code) {
-          this.setState({ error: response.error.reason });
-        } else {
-          this.setState({ submitted: true, error: null, numError: false });
-        }
-      } else {
-        this.setState({ submitted: true, error: null, numError: false });
-      }
+      this.setState({ submitted: true, error: null, numError: false });
     } catch (error) {
-      this.setState({ error: "We're having issues connecting right now." });
+      console.log(error.response.data.error);
+      if (error.response.data.error.code === 6002) {
+        this.setState({ numError: true });
+      } else {
+        this.setState({ error: error.response.data.error.reason });
+      }
     }
   };
 
@@ -296,75 +286,77 @@ class Page extends Component {
         <div className="logo" style={{ marginBottom: "40px" }}>
           <Sonar />
         </div>
-        {this.state.invite ? (
-          this.state.error ? (
-            <div className="text error">{this.state.error}</div>
-          ) : (
-            <div className="text">
-              Enter your # to confirm your invite from @{this.state.username}
-            </div>
-          )
+        {this.state.error ? (
+          <div className="text error">{this.state.error}</div>
+        ) : this.state.username ? (
+          <div className="text">
+            Enter your # to confirm your invite from @{this.state.username}
+          </div>
         ) : null}
-        <div style={{ position: "relative" }}>
-          <div className="input-pill" />
-          <div className="boundary">
-            <div className={this.state.submitted ? "transition-up" : ""}>
+        {this.state.invalid ? null : (
+          <div style={{ position: "relative" }}>
+            <div className="input-pill" />
+            <div className="boundary">
+              <div className={this.state.submitted ? "transition-up" : ""}>
+                <div
+                  className={
+                    this.state.submitted
+                      ? "input-container fade-out"
+                      : "input-container"
+                  }
+                >
+                  <div className="country-code-container">
+                    {this.state.countryCode}
+                    <div className="expand">
+                      <Expand />
+                    </div>
+                  </div>
+
+                  <select
+                    className="dropdown"
+                    value={this.state.countryCode}
+                    name="countryCode"
+                    onChange={this._handleChange}
+                  >
+                    {countryCodes.map((country) => (
+                      <option
+                        default={country.code === "US"}
+                        value={country.dial_code}
+                      >
+                        {country.name} {country.dial_code}
+                      </option>
+                    ))}
+                  </select>
+
+                  <input
+                    className="input"
+                    type="text"
+                    placeholder="000 000 0000"
+                    maxlength="13"
+                    value={this.state.phoneNumber}
+                    onChange={this._handleInputChange}
+                    style={this.state.numError ? { color: "#FF6363" } : null}
+                  />
+                </div>
+                <div
+                  className={this.state.submitted ? "message" : "message hide"}
+                >
+                  {this.props.code ? "Invite sent" : "We'll talk soon"}
+                </div>
+              </div>
+            </div>
+            {this.state.phoneNumber.length >= 7 ? (
               <div
                 className={
-                  this.state.submitted
-                    ? "input-container fade-out"
-                    : "input-container"
+                  this.state.submitted ? "checkmark dark" : "checkmark"
                 }
+                onClick={this._handleSubmit}
               >
-                <div className="country-code-container">
-                  {this.state.countryCode}
-                  <div className="expand">
-                    <Expand />
-                  </div>
-                </div>
-
-                <select
-                  className="dropdown"
-                  value={this.state.countryCode}
-                  name="countryCode"
-                  onChange={this._handleChange}
-                >
-                  {countryCodes.map((country) => (
-                    <option
-                      default={country.code === "US"}
-                      value={country.dial_code}
-                    >
-                      {country.name} {country.dial_code}
-                    </option>
-                  ))}
-                </select>
-
-                <input
-                  className="input"
-                  type="text"
-                  placeholder="000 000 0000"
-                  maxlength="13"
-                  value={this.state.phoneNumber}
-                  onChange={this._handleInputChange}
-                  style={this.state.numError ? { color: "#FF6363" } : null}
-                />
+                <Complete />
               </div>
-              <div
-                className={this.state.submitted ? "message" : "message hide"}
-              >
-                {this.props.code ? "Invite sent" : "We'll talk soon"}
-              </div>
-            </div>
+            ) : null}
           </div>
-          {this.state.phoneNumber.length >= 7 ? (
-            <div
-              className={this.state.submitted ? "checkmark dark" : "checkmark"}
-              onClick={this._handleSubmit}
-            >
-              <Complete />
-            </div>
-          ) : null}
-        </div>
+        )}
         {this.state.music ? (
           <div className="music" onClick={this._handleMusic}>
             <div className="ripples">

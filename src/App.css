@@ -128,14 +128,11 @@ body {
 
 .error {
   color: #FF6363;
-  z-index: 2;
-  margin-bottom: 0;
-  margin-top: -36px;
 }
 
 .message {
   height: 48px;
-  width: 280px;
+  width: 320px;
   box-sizing: border-box;
   padding: 0px 16px 0px 16px;
   border-radius: 5000px;
