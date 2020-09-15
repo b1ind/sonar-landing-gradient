@@ -119,7 +119,6 @@ class App extends Component {
   };
 
   componentDidMount = async () => {
-    document.getElementById("audio").play();
     window.addEventListener("keydown", this._handleKeydown);
     if (this.props.code) {
       try {

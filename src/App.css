@@ -185,12 +185,19 @@ body {
 }
 
 .input-pill {
-  background: rgba(85, 85, 85, 0.6);
-  border-radius: 5000px;
-  backdrop-filter: blur(25px); 
+  background: rgba(85, 85, 85, 0.9);
+  border-radius: 5000px; 
   height: 48px;
   width: 320px;
   position: relative;
+}
+
+@supports ((-webkit-backdrop-filter: blur(25px)) or (backdrop-filter: blur(25px))) {
+  .input-pill {
+    backdrop-filter: blur(25px); 
+  -webkit-backdrop-filter: blur(25px); 
+  background: rgba(85, 85, 85, 0.6);
+  }
 }
 
 @keyframes slide {
