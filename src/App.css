@@ -217,13 +217,6 @@ body {
   transform: translateY(-48px);
 }
 
-.logo {
-  animation-name: float;
-  animation-iteration-count: infinite;
-  animation-duration: 4s;
-  animation-timing-function: ease-in-out;
-}
-
 .circles {
   position: absolute;
   width: 620px;

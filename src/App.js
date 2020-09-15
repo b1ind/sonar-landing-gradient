@@ -8,7 +8,7 @@ let instance = axios.create({
   baseURL: "https://dev.sonar.app",
   timeout: 10000,
   headers: {
-    "x-sonar-api-key": "ZEdKYHsmdfeZFLQeXcTjwfiPWUNOSnqpHVzn",
+    "x-sonar-api-key": process.env.REACT_APP_API_KEY,
     "X-Forwarded-For": "203.0.113.195",
   },
 });
@@ -22,8 +22,8 @@ const Sonar = (props) => (
     fill="none"
   >
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M7.02944 40.9706C11.3726 45.3137 17.3726 48 24 48C37.2548 48 48 37.2548 48 24H42C42 33.9411 33.9411 42 24 42C19.0294 42 14.5294 39.9853 11.2721 36.7279L7.02944 40.9706ZM0 24C0 10.7452 10.7452 0 24 0C30.6274 0 36.6274 2.68629 40.9706 7.02944L36.7279 11.2721C33.4706 8.01472 28.9706 6 24 6C14.0589 6 6 14.0589 6 24H0ZM15.5147 32.4853C17.6863 34.6569 20.6863 36 24 36C30.6274 36 36 30.6274 36 24H30C30 27.3137 27.3137 30 24 30C22.3431 30 20.8431 29.3284 19.7574 28.2426L15.5147 32.4853ZM18 24C18 20.6863 20.6863 18 24 18C25.6569 18 27.1569 18.6716 28.2426 19.7574L32.4853 15.5147C30.3137 13.3431 27.3137 12 24 12C17.3726 12 12 17.3726 12 24H18Z"
       fill="white"
     />
@@ -42,9 +42,9 @@ const Expand = (props) => (
       opacity="0.6"
       d="M1.5 1.5L5 5L8.5 1.5"
       stroke="white"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
@@ -61,9 +61,9 @@ const Complete = (props) => (
     <path
       d="M23.5 15L17 21.5L13 17.5"
       stroke="#444444"
-      stroke-width="2.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
@@ -77,8 +77,8 @@ const Music = (props) => (
     fill="none"
   >
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M21 17V5.5C21 4.39543 20.1046 3.5 19 3.5H10C8.89543 3.5 8 4.39543 8 5.5V13.8368C7.54537 13.6208 7.0368 13.5 6.5 13.5C4.567 13.5 3 15.067 3 17C3 18.933 4.567 20.5 6.5 20.5C8.433 20.5 10 18.933 10 17V7H19V13.8368C18.5454 13.6208 18.0368 13.5 17.5 13.5C15.567 13.5 14 15.067 14 17C14 18.933 15.567 20.5 17.5 20.5C19.433 20.5 21 18.933 21 17Z"
       fill="white"
     />
@@ -94,8 +94,8 @@ const MusicOff = (props) => (
     fill="none"
   >
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M21 8.5V17C21 18.933 19.433 20.5 17.5 20.5C15.567 20.5 14 18.933 14 17C14 15.067 15.567 13.5 17.5 13.5C18.0368 13.5 18.5454 13.6208 19 13.8368V10.5L21 8.5ZM20.4142 4.08579C20.0523 3.72386 19.5523 3.5 19 3.5H10C8.89543 3.5 8 4.39543 8 5.5V13.8368C7.54537 13.6208 7.0368 13.5 6.5 13.5C4.567 13.5 3 15.067 3 17C3 18.2222 3.6265 19.2982 4.57588 19.9241L10 14.5V8H16.5L20.4142 4.08579Z"
       fill="white"
     />
@@ -106,11 +106,11 @@ const MusicOff = (props) => (
   </svg>
 );
 
-class Page extends Component {
+class App extends Component {
   state = {
     countryCode: "+1",
     phoneNumber: "",
-    music: true,
+    music: false,
     submitted: false,
     username: "",
     error: "",
@@ -119,6 +119,7 @@ class Page extends Component {
   };
 
   componentDidMount = async () => {
+    document.getElementById("audio").play();
     window.addEventListener("keydown", this._handleKeydown);
     if (this.props.code) {
       try {
@@ -130,11 +131,12 @@ class Page extends Component {
           username: response.data.data.username,
         });
       } catch (error) {
-        console.log(error.response.data);
-        this.setState({
-          error: error.response.data.error.reason,
-          invalid: true,
-        });
+        if (error.response) {
+          this.setState({
+            error: error.response.data.error.reason,
+            invalid: true,
+          });
+        }
       }
     }
   };
@@ -183,7 +185,6 @@ class Page extends Component {
       });
       this.setState({ submitted: true, error: null, numError: false });
     } catch (error) {
-      console.log(error.response.data.error);
       if (error.response.data.error.code === 6002) {
         this.setState({ numError: true });
       } else {
@@ -322,6 +323,7 @@ class Page extends Component {
                       <option
                         default={country.code === "US"}
                         value={country.dial_code}
+                        key={country.code}
                       >
                         {country.name} {country.dial_code}
                       </option>
@@ -332,7 +334,7 @@ class Page extends Component {
                     className="input"
                     type="text"
                     placeholder="000 000 0000"
-                    maxlength="13"
+                    maxLength="13"
                     value={this.state.phoneNumber}
                     onChange={this._handleInputChange}
                     style={this.state.numError ? { color: "#FF6363" } : null}
@@ -378,7 +380,7 @@ class Page extends Component {
         )}
         <audio
           id="audio"
-          autoPlay
+          autoPlay={false}
           src="https://mcdn.podbean.com/mf/biorg/c57444/2_AM_Study_Session_-_lofi_hip_hopchill_beats__8s9lw.mp3"
         />
       </div>
@@ -386,21 +388,21 @@ class Page extends Component {
   }
 }
 
-function Invite(props) {
-  return <Page code={props.match.params.code} />;
-}
+// function Invite(props) {
+//   return <Page code={props.match.params.code} />;
+// }
 
-class App extends Component {
-  render() {
-    return (
-      <Router>
-        <Switch>
-          <Route exact path="/:code" component={Invite} />
-          <Route component={Page} />
-        </Switch>
-      </Router>
-    );
-  }
-}
+// class App extends Component {
+//   render() {
+//     return (
+//       <Router>
+//         <Switch>
+//           <Route exact path="/:code" component={Invite} />
+//           <Route component={Page} />
+//         </Switch>
+//       </Router>
+//     );
+//   }
+// }
 
 export default App;
