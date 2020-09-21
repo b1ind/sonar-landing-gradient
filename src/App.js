@@ -387,7 +387,8 @@ class App extends Component {
               <div style={{ animationDelay: "2s" }} />
               <div style={{ animationDelay: "3s" }} />
             </div>
-            <Music />
+            <div className="dot-hider"/>
+            <div style={{ zIndex: 3 }}><Music/></div>
           </div>
         ) : (
           <div
