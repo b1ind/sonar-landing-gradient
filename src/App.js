@@ -132,7 +132,13 @@ class App extends Component {
       } catch (error) {
         if (error.response) {
           this.setState({
-            error: error.response.data.error.reason,
+            error:
+              error.response &&
+              error.response.data &&
+              error.response.data.error &&
+              error.response.data.error.reason
+                ? error.response.data.error.reason
+                : "We're having issues connecting right now. Please try again later",
             invalid: true,
           });
         }
@@ -184,10 +190,23 @@ class App extends Component {
       });
       this.setState({ submitted: true, error: null, numError: false });
     } catch (error) {
-      if (error.response.data.error.code === 6002) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.error &&
+        error.response.data.error.code === 6002
+      ) {
         this.setState({ numError: true });
       } else {
-        this.setState({ error: error.response.data.error.reason });
+        this.setState({
+          error:
+            error.response &&
+            error.response.data &&
+            error.response.data.error &&
+            error.response.data.error.reason
+              ? error.response.data.error.reason
+              : "We're having issues connecting right now. Please try again later",
+        });
       }
     }
   };
@@ -294,58 +313,60 @@ class App extends Component {
           </div>
         ) : null}
         {this.state.invalid ? null : (
-          <div style={{ position: "relative" }}>
-            <div className="input-pill" />
-            <div className="boundary">
-              <div className={this.state.submitted ? "transition-up" : ""}>
-                <div
-                  className={
-                    this.state.submitted
-                      ? "input-container fade-out"
-                      : "input-container"
-                  }
-                >
-                  <div className="country-code-container">
-                    {this.state.countryCode}
-                    <div className="expand">
-                      <Expand />
-                    </div>
+          <div className="input-pill">
+            <div className={this.state.submitted ? "transition-up" : ""}>
+              <div /* this is the source of the problem */
+                className={this.state.submitted ? "fade-out" : ""}
+              >
+                <div className="country-code-container">
+                  {this.state.countryCode}
+                  <div className="expand">
+                    <Expand />
                   </div>
-
-                  <select
-                    className="dropdown"
-                    value={this.state.countryCode}
-                    name="countryCode"
-                    onChange={this._handleChange}
-                  >
-                    {countryCodes.map((country) => (
-                      <option
-                        default={country.code === "US"}
-                        value={country.dial_code}
-                        key={country.code}
-                      >
-                        {country.name} {country.dial_code}
-                      </option>
-                    ))}
-                  </select>
-
-                  <input
-                    className="input"
-                    type="text"
-                    placeholder="000 000 0000"
-                    maxLength="13"
-                    value={this.state.phoneNumber}
-                    onChange={this._handleInputChange}
-                    style={this.state.numError ? { color: "#FF6363" } : null}
-                  />
                 </div>
-                <div
-                  className={this.state.submitted ? "message" : "message hide"}
+
+                <select
+                  className={
+                    this.state.submitted ? "dropdown no-pointer" : "dropdown"
+                  }
+                  value={this.state.countryCode}
+                  disabled={this.state.submitted}
+                  name="countryCode"
+                  onChange={this._handleChange}
                 >
-                  {this.props.code ? "Invite sent" : "We'll talk soon"}
-                </div>
+                  {countryCodes.map((country) => (
+                    <option
+                      className="option"
+                      default={country.code === "US"}
+                      value={country.dial_code}
+                      key={country.code}
+                    >
+                      {country.name} {country.dial_code}
+                    </option>
+                  ))}
+                </select>
+
+                <input
+                  className={
+                    this.state.submitted ? "input no-pointer" : "input"
+                  }
+                  type="text"
+                  disabled={this.state.submitted}
+                  name="phoneNumber"
+                  placeholder="000 000 0000"
+                  maxLength="13"
+                  value={this.state.phoneNumber}
+                  onChange={this._handleInputChange}
+                  style={this.state.error ? { color: "#FF6363" } : null}
+                />
+              </div>
+              <div
+                className="message"
+              >
+                {this.props.code ? "Invite sent" : "We'll talk soon"}
               </div>
             </div>
+
             {this.state.phoneNumber.length >= 7 ? (
               <div
                 className={
